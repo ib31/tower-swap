@@ -1,4 +1,5 @@
 import random
+import copy
 
 """" the game board is a 6x6 grid. 
 There are 5 basic objects represented using symbols (integers from 1 to 5).
@@ -312,13 +313,60 @@ def fix_point(grid):
 def game_loop(grid):
     total_score = 0
     stop = int(input("number of actions:\n"))
-    grid, initial_score = fix_point(grid) 
-    total_score+=initial_score
+    grid, initial_score = fix_point(grid)
+    total_score += initial_score
     for l in range(stop):
         print_grid(grid)
         i, j = [int(k) for k in input("type position i j of the object:\n").split()]
         d = input("choose a direction where to move it :\n")
         grid = swap(grid, i, j, d)
         grid, action_score = fix_point(grid)
-        total_score+= action_score
+        total_score += action_score
     print(f"game over ! Total score = {total_score}")
+
+
+def brute_force_action(grid):
+    temp_grid = copy.deepcopy(grid)
+    temp_grid, initial_score = fix_point(temp_grid)
+
+    dir = ("u", "d", "l", "r")
+    best_score = 0
+    best_action = (0, 0, dir[0])
+
+    for i in range(len(grid)):
+        for j in range(len(grid)):
+            for d in dir:
+                test_grid = copy.deepcopy(temp_grid)
+
+                test_grid = swap(test_grid, i, j, d)
+                test_grid, action_score = fix_point(test_grid)
+
+                if action_score > best_score:
+                    best_score = action_score
+                    best_action = (i, j, d)
+
+    return best_action, best_score + initial_score
+
+def symmetric_action(action):
+    i,j,d = action
+    if d == 'r':
+        return i,j+1,'l'
+    elif d == 'l':
+        return i,j-1,'r'
+    elif d == 'u':
+        return i-1,j,'d'
+    elif d == 'd':
+        return i+1,j,'u'
+
+def distribution_brute_force_test(grid, epsilon):
+    distribution = dict()
+    for _ in range(epsilon):
+        result= brute_force_action(grid)
+        result2 = symmetric_action(result[0]),result[1]
+        if result in distribution.keys():
+            distribution[result] += 1
+        elif result2 in distribution.keys():
+            distribution[result2] += 1
+        else:
+            distribution[result] = 1
+    return distribution
