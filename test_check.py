@@ -1,5 +1,5 @@
 from tower_swap import print_grid, check_match, generate_random_grid
-from tower_swap import match_5v, match_5h, match_4v, match_4h, match_3v, match_3h
+# from tower_swap import match_5v, match_5h, match_4v, match_4h, match_3v, match_3h
 
 # grid = [[i * 6 + j for j in range(6)] for i in range(6)]
 

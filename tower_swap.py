@@ -65,77 +65,106 @@ def swap(grid, i, j, direction):
             grid[i + 1][j] = temp
     return grid
 
+
 def match_5h(grid, i, j):
-    if grid[i][j]==0:
-        return grid
+    reward = 0
+    if grid[i][j] == 0:
+        return grid, reward
     if j < 2 and grid[i][j : j + 5] == [grid[i][j]] * 5:
-        grid = match_2v(grid, i, j)
+        reward = 5
+        grid, modified = match_2v(grid, i, j)
+        if modified:
+            reward += 2
         grid[i][j : j + 5] = [0] * 5
-    return grid
+    return grid, reward
 
 
 def match_5v(grid, i, j):
-    if grid[i][j]==0:
-        return grid
+    reward = 0
+    if grid[i][j] == 0:
+        return grid, reward
     if i < 2 and [grid[i + _][j] for _ in range(5)] == [grid[i][j]] * 5:
-        grid = match_2h(grid, i, j)
+        reward = 5
+        grid, modified = match_2h(grid, i, j)
+        if modified:
+            reward += 2
         grid[i][j] = 0
         grid[i + 1][j] = 0
         grid[i + 2][j] = 0
         grid[i + 3][j] = 0
         grid[i + 4][j] = 0
-    return grid
+
+    return grid, reward
 
 
 def match_4h(grid, i, j):
-    if grid[i][j]==0:
-        return grid
+    reward = 0
+    if grid[i][j] == 0:
+        return grid, reward
     if j < 3 and grid[i][j : j + 4] == [grid[i][j]] * 4:
+        reward = 4
         grid, modified = match_1v(grid, i, j)
         if not modified:
-            grid = match_2v(grid, i, j)
+            grid, modified = match_2v(grid, i, j)
+        if modified:
+            reward += 2
         grid[i][j : j + 4] = [0] * 4
-    return grid
+
+    return grid, reward
 
 
 def match_4v(grid, i, j):
-    if grid[i][j]==0:
-        return grid
+    reward = 0
+    if grid[i][j] == 0:
+        return grid, reward
     if i < 3 and [grid[i + _][j] for _ in range(4)] == [grid[i][j]] * 4:
+        reward = 4
         grid, modified = match_1h(grid, i, j)
         if not modified:
-            grid = match_2h(grid, i, j)
+            grid, modified = match_2h(grid, i, j)
+        if modified:
+            reward += 2
         grid[i][j] = 0
         grid[i + 1][j] = 0
         grid[i + 2][j] = 0
         grid[i + 3][j] = 0
-    return grid
+
+    return grid, reward
 
 
 def match_3h(grid, i, j):
-    if grid[i][j]==0:
-        return grid
+    reward = 0
+    if grid[i][j] == 0:
+        return grid, reward
     if j < 4 and grid[i][j : j + 3] == [grid[i][j]] * 3:
-        grid,modified = match_special_case(grid,i,j)
+        reward = 3
+        grid, modified = match_special_case(grid, i, j)
         if not modified:
             grid, modified = match_1v(grid, i, j)
         if not modified:
-            grid = match_2v(grid, i, j)
+            grid, modified = match_2v(grid, i, j)
+        if modified:
+            reward += 2
         grid[i][j : j + 3] = [0] * 3
-    return grid
+
+    return grid, reward
 
 
 def match_3v(grid, i, j):
-    if grid[i][j]==0:
-        return grid
+    reward = 0
+    if grid[i][j] == 0:
+        return grid, reward
     if i < 4 and [grid[i + _][j] for _ in range(3)] == [grid[i][j]] * 3:
+        reward = 3
         grid, modified = match_1h(grid, i, j)
         if not modified:
-            grid = match_2h(grid, i, j)
+            grid, modified = match_2h(grid, i, j)
+        if modified:
+            reward += 2
         grid[i][j] = 0
         grid[i + 1][j] = 0
         grid[i + 2][j] = 0
-    return grid
+    return grid, reward
 
 
 def match_1h(grid, i, j):
@@ -174,45 +203,122 @@ def match_special_case(grid, i, j):
         grid[i + 1][j] = 0
         grid[i + 2][j] = 0
         modified = True
-    return grid,modified
+    return grid, modified
 
 
 def match_2v(grid, i, j):
+    modified = False
     if i > 1:
         if grid[i - 1][j + 2] == grid[i - 2][j + 2] == grid[i][j]:
             grid[i - 1][j + 2] = 0
             grid[i - 2][j + 2] = 0
+            modified = True
     elif i < 4:
         if grid[i + 1][j + 2] == grid[i + 2][j + 2] == grid[i][j]:
             grid[i + 1][j + 2] = 0
             grid[i + 2][j + 2] = 0
-    return grid
+            modified = True
+    return grid, modified
 
 
 def match_2h(grid, i, j):
+    modified = False
     if j > 1:
         if grid[i + 2][j - 1] == grid[i + 2][j - 2] == grid[i][j]:
             grid[i + 2][j - 1] = 0
             grid[i + 2][j - 2] = 0
+            modified = True
     elif j < 4:
         if grid[i + 2][j + 1] == grid[i + 2][j + 2] == grid[i][j]:
             grid[i + 2][j + 1] = 0
             grid[i + 2][j + 2] = 0
-    return grid
+            modified = True
+    return grid, modified
 
 
 def check_match(grid):
+    total = 0
     for i in range(6):
         for j in range(6):
-                grid = match_5h(grid,i,j)
-                grid = match_5v(grid,i,j)
+            grid, reward = match_5h(grid, i, j)
+            grid, reward = match_5v(grid, i, j)
+            total += reward
     for i in range(6):
         for j in range(6):
-                grid = match_4h(grid,i,j)
-                grid = match_4v(grid,i,j)
+            grid, reward = match_4h(grid, i, j)
+            grid, reward = match_4v(grid, i, j)
+            total += reward
     for i in range(6):
         for j in range(6):
-                grid = match_3h(grid,i,j)
-                grid = match_3v(grid,i,j)
+            grid, reward = match_3h(grid, i, j)
+            grid, reward = match_3v(grid, i, j)
+            total += reward
+
+    return grid, total
+
+
+def get_column(grid, column_index):
+    column = [0] * len(grid)
+    for i in range(len(grid)):
+        column[i] = grid[i][column_index]
+    return column
+
+
+def column_update(grid, column_index, new_column):
+    for i in range(len(grid)):
+        grid[i][column_index] = new_column[i]
 
     return grid
+
+
+def gravity(grid):
+    for j in range(len(grid)):
+        column = get_column(grid, j)
+
+        obj = [x for x in column if x != 0]
+
+        for i in range(len(grid)):
+            if i < (len(grid) - len(obj)):
+                column[i] = random.randint(1, 5)
+            else:
+                column[i] = obj[i - (len(grid) - len(obj))]
+
+        grid = column_update(grid, j, column)
+
+    return grid
+
+
+def is_full(grid):
+    n = len(grid)
+    for i in range(n):
+        for j in range(n):
+            if grid[i][j] == 0:
+                return False
+    return True
+
+
+def fix_point(grid):
+    action_score = 0
+    while True:
+        grid = gravity(grid)
+        grid, total = check_match(grid)
+        action_score += total
+        if is_full(grid):
+            break
+
+    return grid, action_score
+
+
+def game_loop(grid):
+    total_score = 0
+    stop = int(input("number of actions:\n"))
+    grid, initial_score = fix_point(grid) 
+    total_score+=initial_score
+    for l in range(stop):
+        print_grid(grid)
+        i, j = [int(k) for k in input("type position i j of the object:\n").split()]
+        d = input("choose a direction where to move it :\n")
+        grid = swap(grid, i, j, d)
+        grid, action_score = fix_point(grid)
+        total_score+= action_score
+    print(f"game over ! Total score = {total_score}")
