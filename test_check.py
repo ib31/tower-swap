@@ -5,11 +5,6 @@ from tower_swap import print_grid, check_match, generate_random_grid
 
 grid = generate_random_grid()
 
-print_grid(grid)
-
-
-# print_grid(check_match(grid))
-
 # grid[0][0:5]=[1]*5
 # grid[1][2] = 1
 # grid[2][2] = 1
@@ -22,12 +17,9 @@ print_grid(grid)
 # grid[4][2] = 1
 # grid[3][2] = 1
 
-# grid[5][1:6]=[1]*5
-# grid[4][3] = 1
-# grid[3][3] = 1
-
-# print_grid(check_match(grid))
-
+grid[5][1:6]=[1]*5
+grid[4][3] = 1
+grid[3][3] = 1
 
 # grid[0][0] = 0
 # grid[0 + 1][0] = 0
@@ -77,4 +69,5 @@ print_grid(grid)
 # grid[4][3] = 1
 # grid[3][3] = 1
 
-print_grid(check_match(grid))
+print_grid(grid)
+print_grid(check_match(grid,(-1,-1))[0])

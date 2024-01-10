@@ -68,6 +68,7 @@ def swap(grid, i, j, direction):
 
 
 def match_5h(grid, i, j):
+    temp = grid[i][j]
     reward = 0
     if grid[i][j] == 0:
         return grid, reward
@@ -77,10 +78,12 @@ def match_5h(grid, i, j):
         if modified:
             reward += 2
         grid[i][j : j + 5] = [0] * 5
+        grid[i][j+2] = (temp-temp%10)*10+temp*11
     return grid, reward
 
 
 def match_5v(grid, i, j):
+    temp = grid[i][j]
     reward = 0
     if grid[i][j] == 0:
         return grid, reward
@@ -91,80 +94,126 @@ def match_5v(grid, i, j):
             reward += 2
         grid[i][j] = 0
         grid[i + 1][j] = 0
-        grid[i + 2][j] = 0
+        grid[i + 2][j] = (temp-temp%10)*10+temp*11
         grid[i + 3][j] = 0
         grid[i + 4][j] = 0
 
     return grid, reward
 
 
-def match_4h(grid, i, j):
+def match_4h(grid, i, j,cause):
+    
     reward = 0
     if grid[i][j] == 0:
         return grid, reward
     if j < 3 and grid[i][j : j + 4] == [grid[i][j]] * 4:
         reward = 4
         grid, modified = match_1v(grid, i, j)
-        if not modified:
-            grid, modified = match_2v(grid, i, j)
         if modified:
             reward += 2
+            cause = i,j+1
+        else:
+            grid, modified = match_2v(grid, i, j)
+            if modified:
+                reward += 2
+                cause = i,j+2
+        temp = grid[i][j]
         grid[i][j : j + 4] = [0] * 4
-
+        x,y = cause
+        if i==x and (y == j+1 or y == j+2):
+            grid[x][y] = (temp-temp%10)*10+temp*11
+        else:
+            grid[i][j+1] = (temp-temp%10)*10+temp*11
     return grid, reward
 
 
-def match_4v(grid, i, j):
+def match_4v(grid, i, j,cause):
+    
     reward = 0
     if grid[i][j] == 0:
         return grid, reward
     if i < 3 and [grid[i + _][j] for _ in range(4)] == [grid[i][j]] * 4:
         reward = 4
         grid, modified = match_1h(grid, i, j)
-        if not modified:
-            grid, modified = match_2h(grid, i, j)
         if modified:
             reward += 2
+            cause  = i+1,j
+        else:
+            grid, modified = match_2h(grid, i, j)
+            if modified:
+                reward += 2
+                cause  = i+2,j
+        temp = grid[i][j]
         grid[i][j] = 0
         grid[i + 1][j] = 0
         grid[i + 2][j] = 0
         grid[i + 3][j] = 0
-
+        x,y = cause
+        if j==y and (x == i+1 or y == i+2):
+            grid[x][y] = (temp-temp%10)*10+temp*11
+        else:
+            grid[i+1][j] = (temp-temp%10)*10+temp*11
     return grid, reward
 
 
-def match_3h(grid, i, j):
+def match_3h(grid, i, j,cause):
+    
     reward = 0
     if grid[i][j] == 0:
         return grid, reward
     if j < 4 and grid[i][j : j + 3] == [grid[i][j]] * 3:
         reward = 3
         grid, modified = match_special_case(grid, i, j)
-        if not modified:
-            grid, modified = match_1v(grid, i, j)
-        if not modified:
-            grid, modified = match_2v(grid, i, j)
         if modified:
             reward += 2
+            cause = i,j
+        if not modified:
+            grid, modified = match_1v(grid, i, j)
+            if modified:
+                reward += 2
+                cause = i,j+1
+        if not modified:
+            grid, modified = match_2v(grid, i, j)
+            if modified:
+                reward += 2
+                cause = i, j+2
+        temp = grid[i][j]
         grid[i][j : j + 3] = [0] * 3
+        x,y = cause
+        if x==i and y in range(j+3):
+            grid[x][y] = (temp-temp%10)*10+temp*11
+        else:
+            grid[i][j] = (temp-temp%10)*10+temp*11
 
     return grid, reward
 
 
-def match_3v(grid, i, j):
+def match_3v(grid, i, j,cause):
+    
     reward = 0
     if grid[i][j] == 0:
         return grid, reward
     if i < 4 and [grid[i + _][j] for _ in range(3)] == [grid[i][j]] * 3:
         reward = 3
         grid, modified = match_1h(grid, i, j)
-        if not modified:
-            grid, modified = match_2h(grid, i, j)
         if modified:
             reward += 2
+            cause = i+1,j
+        if not modified:
+            grid, modified = match_2h(grid, i, j)
+            if modified:
+                reward += 2
+                cause = i+2,j
+        temp = grid[i][j]
         grid[i][j] = 0
         grid[i + 1][j] = 0
         grid[i + 2][j] = 0
+        x,y = cause
+        if y==j and x in range(i+3):
+            grid[x][y] = (temp-temp%10)*10+temp*11
+        else:
+            grid[i][j] = (temp-temp%10)*10+temp*11
+
     return grid, reward
 
 
@@ -237,7 +286,7 @@ def match_2h(grid, i, j):
     return grid, modified
 
 
-def check_match(grid):
+def check_match(grid,cause):
     total = 0
     for i in range(6):
         for j in range(6):
@@ -246,13 +295,13 @@ def check_match(grid):
             total += reward
     for i in range(6):
         for j in range(6):
-            grid, reward = match_4h(grid, i, j)
-            grid, reward = match_4v(grid, i, j)
+            grid, reward = match_4h(grid, i, j,cause)
+            grid, reward = match_4v(grid, i, j,cause)
             total += reward
     for i in range(6):
         for j in range(6):
-            grid, reward = match_3h(grid, i, j)
-            grid, reward = match_3v(grid, i, j)
+            grid, reward = match_3h(grid, i, j,cause)
+            grid, reward = match_3v(grid, i, j,cause)
             total += reward
 
     return grid, total
@@ -298,11 +347,11 @@ def is_full(grid):
     return True
 
 
-def fix_point(grid):
+def fix_point(grid,cause):
     action_score = 0
     while True:
         grid = gravity(grid)
-        grid, total = check_match(grid)
+        grid, total = check_match(grid,cause)
         action_score += total
         if is_full(grid):
             break
@@ -313,21 +362,22 @@ def fix_point(grid):
 def game_loop(grid):
     total_score = 0
     stop = int(input("number of actions:\n"))
-    grid, initial_score = fix_point(grid)
+    grid, initial_score = fix_point(grid,[-1,-1])
     total_score += initial_score
     for l in range(stop):
         print_grid(grid)
         i, j = [int(k) for k in input("type position i j of the object:\n").split()]
         d = input("choose a direction where to move it :\n")
         grid = swap(grid, i, j, d)
-        grid, action_score = fix_point(grid)
+        cause = symmetric_action([i,j,d])[:2]
+        grid, action_score = fix_point(grid,cause)
         total_score += action_score
     print(f"game over ! Total score = {total_score}")
 
 
 def brute_force_action(grid):
     temp_grid = copy.deepcopy(grid)
-    temp_grid, initial_score = fix_point(temp_grid)
+    temp_grid, initial_score = fix_point(temp_grid,[-1,-1])
 
     dir = ("u", "d", "l", "r")
     best_score = 0
@@ -339,7 +389,7 @@ def brute_force_action(grid):
                 test_grid = copy.deepcopy(temp_grid)
 
                 test_grid = swap(test_grid, i, j, d)
-                test_grid, action_score = fix_point(test_grid)
+                test_grid, action_score = fix_point(test_grid,symmetric_action([i,j,d])[:2])
 
                 if action_score > best_score:
                     best_score = action_score
