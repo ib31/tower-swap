@@ -149,7 +149,7 @@ def match_4v(grid, i, j,cause):
         grid[i + 2][j] = 0
         grid[i + 3][j] = 0
         x,y = cause
-        if j==y and (x == i+1 or y == i+2):
+        if j==y and (x == i+1 or x == i+2):
             grid[x][y] = (temp-temp%10)*10+temp*11
         else:
             grid[i+1][j] = (temp-temp%10)*10+temp*11
@@ -362,7 +362,7 @@ def fix_point(grid,cause):
 def game_loop(grid):
     total_score = 0
     stop = int(input("number of actions:\n"))
-    grid, initial_score = fix_point(grid,[-1,-1])
+    grid, initial_score = fix_point(grid,[-99,-99])
     total_score += initial_score
     for l in range(stop):
         print_grid(grid)
@@ -377,7 +377,7 @@ def game_loop(grid):
 
 def brute_force_action(grid):
     temp_grid = copy.deepcopy(grid)
-    temp_grid, initial_score = fix_point(temp_grid,[-1,-1])
+    temp_grid, initial_score = fix_point(temp_grid,[-99,-99])
 
     dir = ("u", "d", "l", "r")
     best_score = 0
